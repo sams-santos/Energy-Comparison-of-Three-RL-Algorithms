@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from datetime import datetime, timezone
 
@@ -24,51 +24,26 @@ def append_df_to_csv(df: pd.DataFrame, out_path: Path) -> None:
 
 def save_per_episode(
     results_dir: Path,
-    base_name: str,
-    distances: List[float],
     metadata: Dict[str, object],
-    epsilons: List[float],
+    distances: List[float],
+    energies: List[Dict[str, Optional[float]]],
 ) -> Path:
-    ensure_dir(results_dir)
+    rows = [
+        {**metadata, "episode": i, "distance": d, **energy}
+        for i, (d, energy) in enumerate(zip(distances, energies))
+    ]
 
-    rows = []
-    run_idx = metadata.get("run_index", 0)
-    instance = metadata.get("instance")
-
-    for i, d in enumerate(distances):
-        rows.append(
-            {
-                "run_index": run_idx,
-                "algorithm": metadata.get("algorithm"),
-                "instance": instance,
-                "r_type": metadata.get("r_type"),
-                "e_type": metadata.get("e_type"),
-                "epsilon_init": metadata.get("epsilon_init"),
-                "epsilon": epsilons[i],
-                "episode": i,
-                "distance": d,
-            }
-        )
-    
-    master_df = pd.DataFrame(rows)
-
-    filename = f"{run_idx}_{instance}_master_episodes.csv"
+    filename = f"{metadata['run_index']}_{metadata['instance']}_master_episodes.csv"
     master_path = results_dir / filename
-
-    append_df_to_csv(master_df, master_path)
+    append_df_to_csv(pd.DataFrame(rows), master_path)
     return master_path
 
 
 def save_summary(
     results_dir: Path,
-    base_name: str,
     summary_row: Dict[str, object],
     master_summary_name: str = "master_summary.csv",
 ) -> Path:
-    ensure_dir(results_dir)
-    summary_df = pd.DataFrame([summary_row])
-    per_path = results_dir / f"{base_name}_summary.csv"
-
     master_path = results_dir / master_summary_name
-    append_df_to_csv(summary_df, master_path)
-    return per_path
+    append_df_to_csv(pd.DataFrame([summary_row]), master_path)
+    return master_path
