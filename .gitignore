@@ -27,3 +27,7 @@ powermetrics_log.txt
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Experiment error logs
+results/error_logs/
+error_log.py

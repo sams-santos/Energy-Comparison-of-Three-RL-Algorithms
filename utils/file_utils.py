@@ -23,20 +23,24 @@ def append_df_to_csv(df: pd.DataFrame, out_path: Path) -> None:
 
 
 def save_per_episode(
-    results_dir: Path,
+    out_path: Path,
     metadata: Dict[str, object],
     distances: List[float],
+    epsilons: List[float],
     energies: List[Dict[str, Optional[float]]],
 ) -> Path:
     rows = [
-        {**metadata, "episode": i, "distance": d, **energy}
-        for i, (d, energy) in enumerate(zip(distances, energies))
+        {**metadata, "episode": i, "epsilon": eps, "distance": d, **energy}
+        for i, (d, eps, energy) in enumerate(zip(distances, epsilons, energies))
     ]
 
-    filename = f"{metadata['run_index']}_{metadata['instance']}_master_episodes.csv"
-    master_path = results_dir / filename
-    append_df_to_csv(pd.DataFrame(rows), master_path)
-    return master_path
+    # One file per training run (one hyperparameter combination), so files stay at `episodes` rows.
+    # Written to a temporary file and renamed, so an interrupted write never leaves a partial file.
+    ensure_dir(out_path.parent)
+    tmp_path = out_path.with_name(out_path.name + ".tmp")
+    pd.DataFrame(rows).to_csv(tmp_path, index=False)
+    tmp_path.replace(out_path)
+    return out_path
 
 
 def save_summary(
