@@ -20,6 +20,8 @@ powermetrics_log.txt
 .Rhistory
 .RData
 .Rproj.user/
+results/statistical-analysis/
+Rplots.pdf
 
 # IDE / OS
 .vscode/
@@ -27,6 +29,9 @@ powermetrics_log.txt
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Archived results and scripts not used in the paper revision
+old/
 
 # Experiment error logs
 results/error_logs/
