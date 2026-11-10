@@ -618,7 +618,12 @@ table_cor_docx <- table_cor |>
     Instance     = as.character(instance),
     n            = n,
     coefficient  = formatC(r, format = "f", digits = 4),
-    `p-value`    = formatC(p_value, format = "e", digits = 2),
+    # p-values this small are below numerical precision: report p < 0.001
+    `p-value`    = if_else(
+      p_value < 0.001,
+      "< 0.001",
+      formatC(p_value, format = "f", digits = 3)
+    ),
     Significance = significance_stars(p_value)
   ) |>
   rename(!!paste0(cor_name, "'s ", cor_symbol) := coefficient)
